@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  ai-interviewer:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DATABASE_URL=sqlite:///./interview.db
+      - SECRET_KEY=${SECRET_KEY}
+      - API_V1_STR=/api/v1
+      - MAX_QUESTIONS_PER_INTERVIEW=10
+    volumes:
+      - ./interview.db:/app/interview.db
+      - ./uploads:/app/uploads
+      - ./vector_store:/app/vector_store
+    restart: unless-stopped

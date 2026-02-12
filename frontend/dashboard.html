@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AI Interviewer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="glass-container">
+        <nav class="navbar">
+            <div class="logo">
+                <i class="fa-solid fa-brain"></i> AI Interviewer
+            </div>
+            <div class="nav-links">
+                <a href="#" onclick="logout()">Logout</a>
+            </div>
+        </nav>
+
+        <header class="hero" style="padding: 2rem 0; text-align: center; flex-direction: column;">
+            <h2>Setup Your Interview</h2>
+            <p>Upload your resume and details to generate a personalized session.</p>
+        </header>
+
+        <section class="glass-card" style="max-width: 800px; margin: 0 auto; padding: 3rem;">
+            <form id="setupForm">
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label style="display: block; margin-bottom: 1rem;">Upload Resume (PDF/DOCX)</label>
+                    <div class="file-drop-area"
+                        style="border: 2px dashed rgba(255,255,255,0.2); padding: 2rem; text-align: center; border-radius: 8px; cursor: pointer; transition: 0.3s;">
+                        <i class="fa-solid fa-cloud-arrow-up"
+                            style="font-size: 2rem; margin-bottom: 1rem; color: var(--secondary-color);"></i>
+                        <p id="fileName">Click or Drag & Drop to Upload</p>
+                        <input type="file" id="resume" accept=".pdf,.docx" required style="display: none;">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label style="display: block; margin-bottom: 1rem;">Job Description</label>
+                    <textarea id="jd" required rows="6" placeholder="Paste the job description here..."
+                        style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; outline: none; resize: vertical; font-family: inherit;"></textarea>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label style="display: block; margin-bottom: 1rem;">Select Interview Type(s)</label>
+                    <div style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="interviewType" value="HR"
+                                style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-color);">
+                            <span>HR Interview</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="interviewType" value="Technical"
+                                style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-color);">
+                            <span>Technical Interview</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" name="interviewType" value="Aptitude"
+                                style="width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary-color);">
+                            <span>Aptitude Test</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%; font-size: 1.1rem;">
+                    <i class="fa-solid fa-rocket"></i> Start Interview
+                </button>
+            </form>
+        </section>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        // File Upload UI
+        const dropArea = document.querySelector('.file-drop-area');
+        const fileInput = document.getElementById('resume');
+        const fileNameDisplay = document.getElementById('fileName');
+
+        dropArea.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length > 0) {
+                fileNameDisplay.textContent = fileInput.files[0].name;
+                dropArea.style.borderColor = 'var(--primary-color)';
+                dropArea.style.background = 'rgba(99, 102, 241, 0.1)';
+            }
+        });
+
+        // Form Submit
+        document.getElementById('setupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            const originalText = btn.innerHTML;
+
+            try {
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+                btn.disabled = true;
+
+                // Get selected interview types
+                const checkboxes = document.querySelectorAll('input[name="interviewType"]:checked');
+                const interviewTypes = Array.from(checkboxes).map(cb => cb.value);
+
+                if (interviewTypes.length === 0) {
+                    alert('Please select at least one interview type');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('resume', fileInput.files[0]);
+                formData.append('job_description', document.getElementById('jd').value);
+                formData.append('interview_types', interviewTypes.join(','));
+
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/interview/setup`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+
+                    // Store interview ID and type for the interview page
+                    sessionStorage.setItem('interviewId', data.interview_id);
+                    sessionStorage.setItem('interviewType', interviewTypes.join(', '));
+
+                    // Redirect to interview page
+                    window.location.href = `interview.html?id=${data.interview_id}`;
+                } else {
+                    const err = await response.json();
+
+                    // Check if it's an authentication error
+                    if (response.status === 401 || err.detail === "Could not validate credentials") {
+                        alert("Your session has expired. Please log in again.");
+                        localStorage.removeItem('token');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+
+                    alert("Setup failed: " + err.detail);
+                }
+            } catch (error) {
+                console.error(error);
+                alert("An error occurred. Please try again.");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+
+</html>

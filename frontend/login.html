@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - AI Interviewer</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="glass-container"
+        style="display: flex; justify-content: center; align-items: center; min-height: 100vh;">
+        <div class="glass-card" style="width: 100%; max-width: 400px; padding: 2.5rem;">
+            <h2 style="text-align: center; margin-bottom: 2rem;">Welcome Back</h2>
+
+            <form id="authForm">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: rgba(255,255,255,0.7);">Email
+                        Address</label>
+                    <input type="email" id="email" required
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; outline: none;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 2rem;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: rgba(255,255,255,0.7);">Password</label>
+                    <input type="password" id="password" required
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; outline: none;">
+                </div>
+
+                <div class="form-group" id="nameField" style="margin-bottom: 1.5rem; display: none;">
+                    <label
+                        style="display: block; margin-bottom: 0.5rem; font-size: 0.9rem; color: rgba(255,255,255,0.7);">Full
+                        Name</label>
+                    <input type="text" id="fullname"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); color: white; outline: none;">
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%; margin-bottom: 1rem;">Login</button>
+            </form>
+
+            <p style="text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.6);">
+                <span id="toggleAuth"
+                    style="cursor: pointer; color: var(--primary-color); text-decoration: underline;">Create an
+                    account</span>
+            </p>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script>
+        const form = document.getElementById('authForm');
+        const toggleBtn = document.getElementById('toggleAuth');
+        const nameField = document.getElementById('nameField');
+        const title = document.querySelector('h2');
+        const submitBtn = document.querySelector('button[type="submit"]');
+        let isLogin = true;
+
+        toggleBtn.addEventListener('click', () => {
+            isLogin = !isLogin;
+            nameField.style.display = isLogin ? 'none' : 'block';
+            title.textContent = isLogin ? 'Welcome Back' : 'Create Account';
+            submitBtn.textContent = isLogin ? 'Login' : 'Register';
+            toggleBtn.textContent = isLogin ? 'Create an account' : 'Already have an account? Login';
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (isLogin) {
+                const success = await loginUser(email, password);
+                if (success) window.location.href = 'dashboard.html';
+            } else {
+                const fullname = document.getElementById('fullname').value;
+                try {
+                    await registerUser(email, password, fullname);
+                    alert("Registration successful! Please login.");
+                    isLogin = true;
+                    toggleBtn.click(); // Switch back to login view
+                } catch (err) {
+                    alert("Registration failed: " + err.message);
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

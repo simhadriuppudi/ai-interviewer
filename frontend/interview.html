@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview - In Progress</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/interview.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+</head>
+
+<body>
+    <div class="glass-container">
+        <nav class="navbar">
+            <div class="logo">
+                <i class="fa-solid fa-brain"></i> AI Interviewer
+            </div>
+            <div class="nav-links">
+                <span id="timer" class="timer">00:00</span>
+                <button id="endInterviewBtn" class="btn-danger">End Interview</button>
+            </div>
+        </nav>
+
+        <div class="interview-container">
+            <!-- Chat Interface -->
+            <div class="chat-container glass-card">
+                <div id="chatMessages" class="chat-messages">
+                    <div class="chat-bubble ai">
+                        <p>Welcome! I'm ready to start your interview. Click the microphone button when you're ready to
+                            answer.</p>
+                    </div>
+                </div>
+
+                <!-- Voice Controls -->
+                <div class="voice-controls">
+                    <button id="micButton" class="mic-button" title="Click to start/stop speaking">
+                        <i class="fa-solid fa-microphone"></i>
+                    </button>
+                    <div id="voiceStatus" class="voice-status">Click microphone to speak</div>
+                </div>
+
+                <!-- Answer Input Area -->
+                <div class="answer-input-area" style="margin-top: 1rem;">
+                    <textarea id="answerInput"
+                        placeholder="Your answer will appear here as you speak, or you can type..." rows="3"
+                        style="width: 100%; padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.05); color: white; font-family: inherit; resize: vertical; outline: none;"></textarea>
+                    <button id="submitAnswerBtn" class="btn-primary" style="margin-top: 0.5rem; width: 100%;">
+                        <i class="fa-solid fa-paper-plane"></i> Submit Answer
+                    </button>
+                </div>
+
+                <!-- Listening Indicator -->
+                <div id="listeningIndicator" class="listening-indicator" style="display: none;">
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                    <div class="pulse-ring"></div>
+                    <p>Listening...</p>
+                </div>
+
+                <!-- Speaking Indicator -->
+                <div id="speakingIndicator" class="speaking-indicator" style="display: none;">
+                    <div class="audio-wave">
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <p>AI is speaking...</p>
+                </div>
+            </div>
+
+            <!-- Interview Info Sidebar -->
+            <div class="interview-sidebar">
+                <div class="glass-card">
+                    <h3>Interview Progress</h3>
+                    <div class="progress-info">
+                        <div class="progress-item">
+                            <span>Questions Answered</span>
+                            <strong id="questionCount">0</strong>
+                        </div>
+                        <div class="progress-item">
+                            <span>Interview Type</span>
+                            <strong id="interviewType">Loading...</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card tips-card">
+                    <h3><i class="fa-solid fa-lightbulb"></i> Tips</h3>
+                    <ul class="tips-list">
+                        <li>Speak clearly and at a moderate pace</li>
+                        <li>Take your time to think before answering</li>
+                        <li>Be specific and provide examples</li>
+                        <li>Stay calm and confident</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden audio element for TTS playback -->
+    <audio id="ttsAudio" style="display: none;"></audio>
+
+    <script src="js/interview.js"></script>
+</body>
+
+</html>
