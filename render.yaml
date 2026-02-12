@@ -2,7 +2,7 @@ services:
   - type: web
     name: ai-interviewer
     env: python
-    buildCommand: pip install -r backend/requirements.txt
+    buildCommand: pip install -r requirements.txt
     startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: GEMINI_API_KEY
@@ -13,7 +13,13 @@ services:
         generateValue: true
       - key: API_V1_STR
         value: /api/v1
+      - key: ALGORITHM
+        value: HS256
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: 480
       - key: MAX_QUESTIONS_PER_INTERVIEW
-        value: 10
+        value: 50
       - key: GEMINI_MODEL
         value: gemini-3-flash-preview
+      - key: PROJECT_NAME
+        value: AI Interviewer
