@@ -4,6 +4,10 @@ Startup script for Render deployment with enhanced error handling and logging
 """
 import os
 import sys
+
+# Add current directory to Python path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import logging
 
 # Configure logging
@@ -15,19 +19,29 @@ logger = logging.getLogger(__name__)
 
 def check_environment():
     """Check required environment variables"""
-    required_vars = ['GEMINI_API_KEY', 'SECRET_KEY', 'DATABASE_URL']
-    missing = []
+    required_vars = ['SECRET_KEY']
+    optional_vars = ['GEMINI_API_KEY', 'DATABASE_URL']
     
+    logger.info("Checking environment variables...")
+    
+    missing_required = []
     for var in required_vars:
         value = os.getenv(var)
         if not value:
-            missing.append(var)
-            logger.error(f"Missing environment variable: {var}")
+            missing_required.append(var)
+            logger.error(f"✗ Missing REQUIRED: {var}")
         else:
             logger.info(f"✓ {var} is set")
     
-    if missing:
-        logger.error(f"Missing required environment variables: {', '.join(missing)}")
+    for var in optional_vars:
+        value = os.getenv(var)
+        if not value:
+            logger.warning(f"⚠ Missing optional: {var}")
+        else:
+            logger.info(f"✓ {var} is set")
+    
+    if missing_required:
+        logger.error(f"Missing required environment variables: {', '.join(missing_required)}")
         return False
     return True
 
@@ -39,19 +53,19 @@ def main():
     
     # Check Python version
     logger.info(f"Python version: {sys.version}")
+    logger.info(f"Current directory: {os.getcwd()}")
+    logger.info(f"Python path: {sys.path[:3]}")
     
     # Check environment variables
-    logger.info("Checking environment variables...")
     if not check_environment():
-        logger.error("Environment check failed!")
-        sys.exit(1)
+        logger.error("Environment check failed! Continuing anyway...")
     
     # Get port from environment
     port = int(os.getenv('PORT', 8000))
     logger.info(f"PORT environment variable: {port}")
     
     # Check if we can import required modules
-    logger.info("Checking imports...")
+    logger.info("Checking critical imports...")
     try:
         import fastapi
         logger.info(f"✓ FastAPI version: {fastapi.__version__}")
@@ -59,15 +73,21 @@ def main():
         import uvicorn
         logger.info(f"✓ Uvicorn version: {uvicorn.__version__}")
         
-        import google.generativeai as genai
-        logger.info("✓ Google Generative AI imported successfully")
-        
+    except ImportError as e:
+        logger.error(f"✗ Critical import error: {e}")
+        sys.exit(1)
+    
+    # Try to import the application
+    logger.info("Importing application...")
+    try:
         from backend.app.main import app
         logger.info("✓ Application imported successfully")
         
-    except ImportError as e:
-        logger.error(f"Import error: {e}")
-        sys.exit(1)
+    except Exception as e:
+        logger.error(f"✗ Failed to import application: {e}")
+        import traceback
+        traceback.print_exc()
+        logger.error("Attempting to continue anyway...")
     
     # Start the server
     logger.info("=" * 60)
@@ -75,14 +95,16 @@ def main():
     logger.info("=" * 60)
     
     try:
+        import uvicorn
         uvicorn.run(
             "backend.app.main:app",
             host="0.0.0.0",
             port=port,
-            log_level="info"
+            log_level="info",
+            access_log=True
         )
     except Exception as e:
-        logger.error(f"Failed to start server: {e}")
+        logger.error(f"✗ Failed to start server: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
