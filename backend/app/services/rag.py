@@ -1,4 +1,3 @@
-import faiss
 import numpy as np
 import os
 import pickle
@@ -6,6 +5,7 @@ from backend.app.services.embedding import get_embedding
 
 class RAGService:
     def __init__(self, storage_path="vector_store/index.faiss", doc_path="vector_store/docs.pkl"):
+        import faiss  # lazy import - only loads when RAGService is first used
         self.dimension = 384 # All-MiniLM-L6-v2
         self.storage_path = storage_path
         self.doc_path = doc_path
@@ -51,6 +51,7 @@ class RAGService:
         return results
 
     def save(self):
+        import faiss  # lazy import
         if not os.path.exists("vector_store"):
             os.makedirs("vector_store")
         faiss.write_index(self.index, self.storage_path)
@@ -58,8 +59,20 @@ class RAGService:
             pickle.dump(self.documents, f)
 
     def clear(self):
+        import faiss  # lazy import
         self.index = faiss.IndexFlatL2(self.dimension)
         self.documents = []
         self.save()
 
-rag_engine = RAGService()
+# Lazy singleton - only created when first accessed, NOT at import time
+_rag_engine = None
+
+def get_rag_engine() -> RAGService:
+    """Get or create the RAG engine (lazy initialization)."""
+    global _rag_engine
+    if _rag_engine is None:
+        _rag_engine = RAGService()
+    return _rag_engine
+
+# Keep backward compatibility - but now lazy
+rag_engine = None  # Will be set on first use via get_rag_engine()

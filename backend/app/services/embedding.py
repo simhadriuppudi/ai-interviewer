@@ -1,13 +1,12 @@
-from sentence_transformers import SentenceTransformer
-
-# Lazy initialization - model loads on first use, not at import time
-# This prevents startup hangs on cloud deployments
+# Fully lazy imports - nothing loads until first embedding request
+# This prevents PyTorch/sentence-transformers from hanging server startup
 _model = None
 
 def _get_model():
-    """Get or initialize the embedding model (lazy loading)"""
+    """Lazily import and initialize the embedding model on first use."""
     global _model
     if _model is None:
+        from sentence_transformers import SentenceTransformer  # lazy import
         _model = SentenceTransformer('all-MiniLM-L6-v2')
     return _model
 

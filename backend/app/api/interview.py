@@ -11,7 +11,7 @@ from backend.app.api import deps
 from backend.app.models.user import User
 from backend.app.models.interview import InterviewHistory, InterviewQuestion, PerformanceMetric
 from backend.app.services.parser import parse_resume
-from backend.app.services.rag import rag_engine
+from backend.app.services.rag import get_rag_engine
 from backend.app.services.gemini_service import gemini_client
 from backend.app.services.voice_service import voice_service
 
@@ -79,9 +79,9 @@ async def setup_interview(
 
     
     # Clear and populate RAG engine
-    rag_engine.clear()
-    rag_engine.add_document(resume_content)
-    rag_engine.add_document(job_description)
+    get_rag_engine().clear()
+    get_rag_engine().add_document(resume_content)
+    get_rag_engine().add_document(job_description)
     
     # Create interview record
     interview = InterviewHistory(
