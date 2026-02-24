@@ -21,6 +21,14 @@ def register(user_in: UserCreate, session: Session = Depends(get_session)):
             )
         
         print("Creating new user object")
+        
+        # Validate password length (bcrypt limit is 72 bytes)
+        if len(user_in.password.encode('utf-8')) > 72:
+            raise HTTPException(
+                status_code=400,
+                detail="Password is too long. Please use a password with 72 characters or fewer.",
+            )
+        
         user = User(
             email=user_in.email,
             hashed_password=get_password_hash(user_in.password),
