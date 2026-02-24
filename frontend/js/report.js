@@ -1,6 +1,6 @@
 // Report Page - Display Performance Results
 
-const API_BASE = 'http://localhost:8000/api/v1';
+const API_BASE = `${window.location.origin}/api/v1`;
 
 // DOM Elements
 const overallScoreEl = document.getElementById('overallScore');

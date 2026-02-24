@@ -1,6 +1,6 @@
 // Interview Page - Voice-Enabled Interview Logic
 
-const API_BASE = 'http://localhost:8000/api/v1';
+const API_BASE = `${window.location.origin}/api/v1`;
 let interviewId = null;
 let questionCount = 0;
 let recognition = null;

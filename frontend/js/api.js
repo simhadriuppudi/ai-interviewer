@@ -1,4 +1,5 @@
-const API_BASE = "http://localhost:8000/api/v1";
+// Automatically detect API base URL - works for both local dev and Render deployment
+const API_BASE = `${window.location.origin}/api/v1`;
 
 async function apiRequest(endpoint, method = "GET", body = null, isFileUpload = false) {
     const headers = {};
